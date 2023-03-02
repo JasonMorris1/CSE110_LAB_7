@@ -167,6 +167,7 @@ public class ListActivity extends AppCompatActivity {
         // Therefore, we delegate to the NoteActivity class to create the intent.
         Log.d("NotesAdapter", "Opened note " + note.title);
         var intent = NoteActivity.intentFor(this, note);
+
         startActivity(intent);
     }
 

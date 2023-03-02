@@ -27,6 +27,27 @@ public class NoteAPI {
         return instance;
     }
 
+
+    public Note getNote(String title) {
+        var request = new Request.Builder()
+                .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
+                .method("GET", null)
+                .build();
+
+
+        try (var response = client.newCall(request).execute()) {
+            assert response.body() != null;
+            var body = response.body().string();
+
+            return Note.fromJSON(body);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     /**
      * An example of sending a GET request to the server.
      *
