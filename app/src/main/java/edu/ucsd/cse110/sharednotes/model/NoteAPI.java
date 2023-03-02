@@ -39,30 +39,37 @@ public class NoteAPI {
     }
 
 
+
+    @WorkerThread
     public  Note getNote(String title) {
-
-
 
         var request = new Request.Builder()
                 .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
                 .method("GET", null)
                 .build();
 
-        Log.d("get note", "trying to get note from server");
 
         try (var response = client.newCall(request).execute()) {
             assert response.body() != null;
             var body = response.body().string();
 
-            Log.d("NoteAPIClass", "ASDFasdfajsdfl;asdkjfa;lsdkjf");
-            Log.d("Server Respone body", body);
+            Log.d("Server Response body", body);
 
             return Note.fromJSON(body);
 
         } catch (Exception e) {
             e.printStackTrace();
+            return  null;
         }
-        return null;
+    }
+
+    @AnyThread
+    public Future<Note> getNoteAsync(String title){
+        var executor = Executors.newSingleThreadExecutor();
+        var future = executor.submit(() -> getNote(title));
+        // We can use future.get(1, SECONDS) to wait for the result.
+        return future;
+
     }
 
 

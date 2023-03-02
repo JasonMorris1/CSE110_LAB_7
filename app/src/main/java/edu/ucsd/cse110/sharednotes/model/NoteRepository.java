@@ -8,15 +8,22 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class NoteRepository {
     private final NoteDao dao;
+    private static ScheduledFuture<?> scheduledFuture = null;
+
+    //we create a hashmap that stores the runnables?
+    private HashMap<String, Runnable> runnableHashMap = new HashMap<>();
+
 
     public NoteRepository(NoteDao dao) {
         this.dao = dao;
@@ -94,30 +101,55 @@ public class NoteRepository {
 
 
 
-        //var note = NoteAPI.provide().getNote(title);
-
-
-
+//        //var note = NoteAPI.provide().getNote(title);
         var serverNote = new MutableLiveData<Note>();
 
-
-
-        var executor = Executors.newSingleThreadScheduledExecutor();
-        var requestFuture = executor.scheduleAtFixedRate(()->{
-           serverNote.postValue(NoteAPI.provide().getNote(title));
-        }, 0, 3000, TimeUnit.MILLISECONDS);
-
-        try {
-            requestFuture.get(1, TimeUnit.SECONDS);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
+        if (scheduledFuture != null)
+        {
+            scheduledFuture.cancel(true);
         }
+//        if (scheduler != null)
+//        {
+//            scheduler.shutdownNow();
+//        }
 
-        return serverNote;
+        var future = NoteAPI.provide().getNoteAsync(title);
+        try {
+             var res = future.get(1, TimeUnit.SECONDS);
+             serverNote.postValue(res);
+
+             if (res != null){
+
+                 var scheduler = Executors.newSingleThreadScheduledExecutor();
+                   scheduledFuture = scheduler.scheduleAtFixedRate(()->{
+                     serverNote.postValue(NoteAPI.provide().getNote(title));
+                 }, 3, 3, TimeUnit.SECONDS);
+
+             }
+
+             return serverNote;
+
+
+        } catch (ExecutionException e) {
+           // throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+           // throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+           // throw new RuntimeException(e);
+        }
+        return null;
+//
+//      return
+
+//        var executor = Executors.newSingleThreadScheduledExecutor();
+//        var requestFuture = executor.scheduleAt
+//        FixedRate(()->{
+//           serverNote.postValue(NoteAPI.provide().getNote(title));
+//        }, 0, 3000, TimeUnit.MILLISECONDS);
+
+
+
+
 
 
 
