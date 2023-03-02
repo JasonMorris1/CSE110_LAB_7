@@ -2,7 +2,12 @@ package edu.ucsd.cse110.sharednotes.model;
 
 import android.util.Log;
 
+import androidx.annotation.AnyThread;
+
 import com.google.gson.Gson;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -28,16 +33,23 @@ public class NoteAPI {
     }
 
 
-    public Note getNote(String title) {
+    public  Note getNote(String title) {
+
+
+
         var request = new Request.Builder()
                 .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
                 .method("GET", null)
                 .build();
 
+        Log.d("get note", "trying to get note from server");
 
         try (var response = client.newCall(request).execute()) {
             assert response.body() != null;
             var body = response.body().string();
+
+            Log.d("NoteAPIClass", "ASDFasdfajsdfl;asdkjfa;lsdkjf");
+            Log.d("Server Respone body", body);
 
             return Note.fromJSON(body);
 
@@ -52,13 +64,17 @@ public class NoteAPI {
      * An example of sending a GET request to the server.
      *
      * The /echo/{msg} endpoint always just returns {"message": msg}.
+     *
+     * This method should can be called on a background thread (Android
+     * disallows network requests on the main thread).
      */
-    public void echo(String msg) {
+    @WorkerThread
+    public String echo(String msg) {
         // URLs cannot contain spaces, so we replace them with %20.
-        msg = msg.replace(" ", "%20");
+        String encodedMsg = msg.replace(" ", "%20");
 
         var request = new Request.Builder()
-                .url("https://sharednotes.goto.ucsd.edu/echo/" + msg)
+                .url("https://sharednotes.goto.ucsd.edu/echo/" + encodedMsg)
                 .method("GET", null)
                 .build();
 
@@ -66,8 +82,19 @@ public class NoteAPI {
             assert response.body() != null;
             var body = response.body().string();
             Log.i("ECHO", body);
+            return body;
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
+    }
+
+    @AnyThread
+    public Future<String> echoAsync(String msg) {
+        var executor = Executors.newSingleThreadExecutor();
+        var future = executor.submit(() -> echo(msg));
+
+        // We can use future.get(1, SECONDS) to wait for the result.
+        return future;
     }
 }

@@ -18,6 +18,7 @@ import android.widget.EditText;
 
 import edu.ucsd.cse110.sharednotes.R;
 import edu.ucsd.cse110.sharednotes.model.Note;
+import edu.ucsd.cse110.sharednotes.model.NoteAPI;
 import edu.ucsd.cse110.sharednotes.view.NotesAdapter;
 import edu.ucsd.cse110.sharednotes.viewmodel.ListViewModel;
 

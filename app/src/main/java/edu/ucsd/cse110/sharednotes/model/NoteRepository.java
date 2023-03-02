@@ -1,14 +1,18 @@
 package edu.ucsd.cse110.sharednotes.model;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class NoteRepository {
     private final NoteDao dao;
@@ -88,16 +92,28 @@ public class NoteRepository {
 
 
 
-        var note = NoteAPI.provide().getNote(title);
+        //var note = NoteAPI.provide().getNote(title);
 
-        var serverNote = new MutableLiveData<Note>(note);
-      //  test.setValue(note);
+
+
+        var serverNote = new MutableLiveData<Note>();
+
 
 
         var executor = Executors.newSingleThreadScheduledExecutor();
-        var clockFuture = executor.scheduleAtFixedRate(()->{
+        var requestFuture = executor.scheduleAtFixedRate(()->{
            serverNote.postValue(NoteAPI.provide().getNote(title));
         }, 0, 3000, TimeUnit.MILLISECONDS);
+
+        try {
+            requestFuture.get(1, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
 
         return serverNote;
 
