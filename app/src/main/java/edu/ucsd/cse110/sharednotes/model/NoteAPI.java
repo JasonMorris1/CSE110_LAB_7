@@ -4,6 +4,10 @@ import android.util.Log;
 
 import androidx.annotation.AnyThread;
 
+import androidx.annotation.MainThread;
+import androidx.annotation.WorkerThread;
+
+
 import com.google.gson.Gson;
 
 import java.util.concurrent.Executors;
@@ -14,6 +18,8 @@ import okhttp3.Request;
 
 public class NoteAPI {
     // TODO: Implement the API using OkHttp!
+    // TODO: - getNote (maybe getNoteAsync)
+    // TODO: - putNote (don't need putNotAsync, probably)
     // TODO: Read the docs: https://square.github.io/okhttp/
     // TODO: Read the docs: https://sharednotes.goto.ucsd.edu/docs
 
