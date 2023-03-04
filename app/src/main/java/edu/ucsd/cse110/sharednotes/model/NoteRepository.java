@@ -1,5 +1,7 @@
 package edu.ucsd.cse110.sharednotes.model;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -8,14 +10,16 @@ import androidx.lifecycle.Observer;
 import java.nio.channels.MulticastChannel;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class NoteRepository {
     private final NoteDao dao;
-    private ScheduledFuture<?> poller; // what could this be for... hmm?
+    private static ScheduledFuture<?> poller; // what could this be for... hmm?
 
     public NoteRepository(NoteDao dao) {
         this.dao = dao;
@@ -97,6 +101,8 @@ public class NoteRepository {
         // TODO: Set up polling background thread (MutableLiveData?)
         // TODO: Refer to TimerService from https://github.com/DylanLukes/CSE-110-WI23-Demo5-V2.
 
+        Log.d("getRemote", "get remote called with title: " + title);
+
         // Cancel any previous poller if it exists.
         if (this.poller != null && !this.poller.isCancelled()) {
             poller.cancel(true);
@@ -110,6 +116,17 @@ public class NoteRepository {
         poller = executer.scheduleAtFixedRate(()->{
             remoteNote.postValue(NoteAPI.provide().getNote(title));
         }, 0, 3, TimeUnit.SECONDS);
+
+//        try {
+//            poller.get(1,TimeUnit.SECONDS);
+//
+//        } catch (ExecutionException e) {
+//           // throw new RuntimeException(e);
+//        } catch (InterruptedException e) {
+//          //  throw new RuntimeException(e);
+//        } catch (TimeoutException e) {
+//           // throw new RuntimeException(e);
+//        }
         return remoteNote;
 
         // You may (but don't have to) want to cache the LiveData's for each title, so that
@@ -121,6 +138,6 @@ public class NoteRepository {
 
     public void upsertRemote(Note note) {
         // TODO: Implement upsertRemote!
-        throw new UnsupportedOperationException("Not implemented yet");
+       throw new UnsupportedOperationException("Not implemented yet");
     }
 }
