@@ -138,6 +138,11 @@ public class NoteRepository {
 
     public void upsertRemote(Note note) {
         // TODO: Implement upsertRemote!
-       throw new UnsupportedOperationException("Not implemented yet");
+       //throw new UnsupportedOperationException("Not implemented yet");
+        if(note.version == 0){
+            note.version = note.version + 1;
+        }
+        NoteAPI.provide().putNote(note);
+        dao.upsert(note);
     }
 }

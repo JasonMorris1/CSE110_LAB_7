@@ -27,9 +27,6 @@ public class NoteViewModel extends AndroidViewModel {
         // The returned live data should update whenever there is a change in
         // the database, or when the server returns a newer version of the note.
         // Polling interval: 3s.
-
-
-
         note = repo.getSynced(title);
         //te = repo.getRemote(title); //THIS IS JUST to TEST for now
         if (note == null) {
@@ -40,6 +37,10 @@ public class NoteViewModel extends AndroidViewModel {
 
     public void save(Note note) {
         // TODO: try to upload the note to the server.
+        //If note already exist on remote
+        if (repo.getRemote(note.title) != null){
+            repo.upsertRemote(note);
+        }
         repo.upsertLocal(note);
     }
 }

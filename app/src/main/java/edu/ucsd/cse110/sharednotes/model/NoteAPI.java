@@ -11,8 +11,11 @@ import com.google.gson.Gson;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class NoteAPI {
     // TODO: Implement the API using OkHttp!
@@ -77,7 +80,7 @@ public class NoteAPI {
 
 
     @WorkerThread
-    public  Note getNote(String title) {
+    public Note getNote(String title) {
 
         var request = new Request.Builder()
                 .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
@@ -98,7 +101,22 @@ public class NoteAPI {
             return  null;
         }
     }
-
+   // public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    @WorkerThread
+    public void putNote(Note note) {
+        final MediaType JSON = MediaType.parse("application/json; charset=utf-8" );
+        RequestBody body = RequestBody.create(note.toJSON(), JSON);
+        var request = new Request.Builder()
+                .url("https://sharednotes.goto.ucsd.edu/notes/")
+                .post(body)
+                .build();
+        try (var response = client.newCall(request).execute()) {
+            assert response.body() != null;
+            Log.d("Local Response body", body.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @AnyThread
     public Future<Note> getNoteAsync(String title){
         var executor = Executors.newSingleThreadExecutor();
