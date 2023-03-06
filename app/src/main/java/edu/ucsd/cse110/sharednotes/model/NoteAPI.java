@@ -11,8 +11,11 @@ import com.google.gson.Gson;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class NoteAPI {
     // TODO: Implement the API using OkHttp!
@@ -22,7 +25,8 @@ public class NoteAPI {
     // TODO: Read the docs: https://sharednotes.goto.ucsd.edu/docs
 
     private volatile static NoteAPI instance = null;
-
+    private static final MediaType JSON
+            = MediaType.get("application/json; charset=utf-8");
     private OkHttpClient client;
 
     public NoteAPI() {
@@ -77,7 +81,7 @@ public class NoteAPI {
 
 
     @WorkerThread
-    public  Note getNote(String title) {
+    public Note getNote(String title) {
 
         var request = new Request.Builder()
                 .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
@@ -97,6 +101,31 @@ public class NoteAPI {
             e.printStackTrace();
             return  null;
         }
+    }
+   // public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    @WorkerThread
+    public void putNote(Note note) {
+
+        RequestBody body = RequestBody.create(note.toJSON(), JSON);
+        var request = new Request.Builder()
+                .url("https://sharednotes.goto.ucsd.edu/notes/" + note.title)
+                .method("PUT", body)
+                .build();
+        try (var response = client.newCall(request).execute()) {
+            assert response.body() != null;
+            Log.d("Local Response body", body.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @AnyThread
+    public Future putNoteAsync(Note note) {
+        var executor = Executors.newSingleThreadExecutor();
+        return executor.submit(() -> putNote(note));
+
+        // We can use future.get(1, SECONDS) to wait for the result.
+
     }
 
     @AnyThread
