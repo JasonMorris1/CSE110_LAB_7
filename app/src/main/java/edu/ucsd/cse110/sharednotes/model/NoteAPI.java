@@ -25,7 +25,8 @@ public class NoteAPI {
     // TODO: Read the docs: https://sharednotes.goto.ucsd.edu/docs
 
     private volatile static NoteAPI instance = null;
-
+    private static final MediaType JSON
+            = MediaType.get("application/json; charset=utf-8");
     private OkHttpClient client;
 
     public NoteAPI() {
@@ -104,11 +105,11 @@ public class NoteAPI {
    // public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     @WorkerThread
     public void putNote(Note note) {
-        final MediaType JSON = MediaType.parse("application/json; charset=utf-8" );
+
         RequestBody body = RequestBody.create(note.toJSON(), JSON);
         var request = new Request.Builder()
-                .url("https://sharednotes.goto.ucsd.edu/notes/")
-                .post(body)
+                .url("https://sharednotes.goto.ucsd.edu/notes/" + note.title)
+                .method("PUT", body)
                 .build();
         try (var response = client.newCall(request).execute()) {
             assert response.body() != null;
