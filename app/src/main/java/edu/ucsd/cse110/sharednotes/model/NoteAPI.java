@@ -117,6 +117,16 @@ public class NoteAPI {
             e.printStackTrace();
         }
     }
+
+    @AnyThread
+    public Future putNoteAsync(Note note) {
+        var executor = Executors.newSingleThreadExecutor();
+        return executor.submit(() -> putNote(note));
+
+        // We can use future.get(1, SECONDS) to wait for the result.
+
+    }
+
     @AnyThread
     public Future<Note> getNoteAsync(String title){
         var executor = Executors.newSingleThreadExecutor();

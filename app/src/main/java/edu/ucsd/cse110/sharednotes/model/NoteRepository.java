@@ -110,23 +110,30 @@ public class NoteRepository {
 
         // Set up a background thread that will poll the server every 3 seconds.
 
+
+
         var remoteNote = new MutableLiveData<Note>();
+
+
 
         var executer  = Executors.newSingleThreadScheduledExecutor();
         poller = executer.scheduleAtFixedRate(()->{
             remoteNote.postValue(NoteAPI.provide().getNote(title));
         }, 0, 3, TimeUnit.SECONDS);
 
-//        try {
-//            poller.get(1,TimeUnit.SECONDS);
-//
-//        } catch (ExecutionException e) {
-//           // throw new RuntimeException(e);
-//        } catch (InterruptedException e) {
-//          //  throw new RuntimeException(e);
-//        } catch (TimeoutException e) {
-//           // throw new RuntimeException(e);
-//        }
+
+
+        //This code bellow is blocking. Causes the app to freeze untill server request reutrns
+        try {
+            poller.get(500,TimeUnit.MILLISECONDS);
+
+        } catch (ExecutionException e) {
+           // throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+          //  throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+           // throw new RuntimeException(e);
+        }
         return remoteNote;
 
         // You may (but don't have to) want to cache the LiveData's for each title, so that
@@ -142,7 +149,7 @@ public class NoteRepository {
         if(note.version == 0){
             note.version = note.version + 1;
         }
-        NoteAPI.provide().putNote(note);
+        NoteAPI.provide().putNoteAsync(note);
         dao.upsert(note);
     }
 }
